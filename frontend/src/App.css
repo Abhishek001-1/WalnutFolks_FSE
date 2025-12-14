@@ -1,0 +1,14 @@
+/* small visual polish for dashboard */
+.hero-gradient {
+	background: linear-gradient(180deg, rgba(99,102,241,0.08), transparent 60%);
+}
+
+.card-title {
+	color: #0f172a;
+}
+
+.chart-legend-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
