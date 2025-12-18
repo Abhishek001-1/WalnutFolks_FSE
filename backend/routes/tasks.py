@@ -1,5 +1,5 @@
 import asyncio
-from db.storage import get_transaction, mark_processed
+from ..db.storage import get_transaction, mark_processed
 
 
 async def process_transaction(transaction_id: str):
