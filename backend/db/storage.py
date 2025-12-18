@@ -1,6 +1,9 @@
 from typing import Optional, Dict
 from datetime import datetime
 import os
+import dotenv
+
+dotenv.load_dotenv()
 
 from pymongo import MongoClient, errors
 
@@ -12,10 +15,12 @@ _col = None
 def _get_client():
     global _client, _db, _col
     if _client is None:
-        mongo_uri = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
+        mongo_uri = os.environ.get("MONGODB_URI")
         _client = MongoClient(mongo_uri)
-        _db = _client.get_database("webhooks_db")
-        _col = _db.get_collection("transactions")
+        # _db = _client.get_database("webhooks_db")
+        # _col = _db.get_collection("transactions")
+        _db = _client.get_database(os.environ.get("DB_NAME"))
+        _col = _db.get_collection(os.environ.get("COLLECTION_NAME"))
     return _client, _db, _col
 
 
