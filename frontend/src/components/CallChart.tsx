@@ -48,39 +48,11 @@ export default function CallChart({ data, labels, activeIndex = 0, onActiveChang
   }
   const activeValue = data[activeIndex] ?? 0
 
-  // Plugin to draw centered text inside the doughnut canvas so it remains centered
-  const centerTextPlugin = {
-    id: 'centerText',
-    beforeDraw: (chart: any) => {
-      try {
-        const ctx = chart.ctx
-        const centerX = (chart.chartArea.left + chart.chartArea.right) / 2
-        const centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2
-
-        ctx.save()
-
-        // Draw main number
-        ctx.font = '700 28px Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial'
-        ctx.fillStyle = '#0f172a'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText(String(activeValue), centerX, centerY - 6)
-
-        // Draw caption
-        ctx.font = '14px Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial'
-        ctx.fillStyle = '#64748b'
-        ctx.fillText('Calls', centerX, centerY + 20)
-
-        ctx.restore()
-      } catch (e) {
-        // fail silently if chart not ready
-      }
-    },
-  }
+  // No center text plugin — show only the donut chart
 
   return (
     <div style={{ position: 'relative', height: 320 }}>
-      <Doughnut ref={ref} data={chartData} options={options} plugins={[centerTextPlugin]} />
+      <Doughnut ref={ref} data={chartData} options={options} />
     </div>
   )
 }
