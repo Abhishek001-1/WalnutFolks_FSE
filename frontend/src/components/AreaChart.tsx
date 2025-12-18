@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -87,38 +87,63 @@ export default function AreaChart({ data, labels }: Props) {
   // compute single maxima index for display
   const maxIndex = data.indexOf(Math.max(...data))
 
-  // compute pixel position for the maxima marker (if chart is ready)
-  let markerLeft = 0
-  let markerTop = 0
+  // marker state: only render marker when we have valid pixel coords
+  const [markerPos, setMarkerPos] = useState<{ left: number; top: number } | null>(null)
   const markerSize = 12
-  const chart = chartRef.current as any
-  if (chart && chart.scales) {
+
+  const updateMarker = () => {
+    const chart = chartRef.current as any
+    if (!chart || !chart.scales) {
+      setMarkerPos(null)
+      return
+    }
+
     try {
-      markerLeft = chart.scales.x.getPixelForValue(maxIndex) || 0
-      markerTop = chart.scales.y.getPixelForValue(data[maxIndex]) || 0
+      const left = chart.scales.x.getPixelForValue(maxIndex)
+      const top = chart.scales.y.getPixelForValue(data[maxIndex])
+      if (typeof left === 'number' && typeof top === 'number' && !Number.isNaN(left) && !Number.isNaN(top)) {
+        setMarkerPos({ left, top })
+      } else {
+        setMarkerPos(null)
+      }
     } catch (e) {
-      // ignore until chart ready
+      setMarkerPos(null)
     }
   }
+
+  useEffect(() => {
+    // update marker once chart has mounted and whenever data/labels change
+    // small timeout lets the chart finish layout in most cases
+    const t = setTimeout(updateMarker, 50)
+
+    // also update on window resize so marker stays aligned
+    window.addEventListener('resize', updateMarker)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('resize', updateMarker)
+    }
+  }, [data, labels])
 
   return (
     <div style={{ position: 'relative', height: 300 }}>
       <Line ref={chartRef} data={chartData} options={options} />
-      {/* single maxima marker */}
-      <div
-        style={{
-          position: 'absolute',
-          left: markerLeft - markerSize / 2,
-          top: markerTop - markerSize / 2,
-          width: markerSize,
-          height: markerSize,
-          borderRadius: markerSize / 2,
-          background: '#2563EB',
-          boxShadow: '0 2px 6px rgba(37,99,235,0.25)',
-          pointerEvents: 'none',
-        }}
-        title="Maxima"
-      />
+      {/* single maxima marker — render only when we have valid pixel positions */}
+      {markerPos ? (
+        <div
+          style={{
+            position: 'absolute',
+            left: markerPos.left - markerSize / 2,
+            top: markerPos.top - markerSize / 2,
+            width: markerSize,
+            height: markerSize,
+            borderRadius: markerSize / 2,
+            background: '#2563EB',
+            boxShadow: '0 2px 6px rgba(37,99,235,0.25)',
+            pointerEvents: 'none',
+          }}
+          title="Maxima"
+        />
+      ) : null}
     </div>
   )
 }
