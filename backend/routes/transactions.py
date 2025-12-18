@@ -1,8 +1,8 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse
 from datetime import datetime
-from schemas.models import TransactionIn, TransactionOut
-from db import storage
+from ..schemas.models import TransactionIn, TransactionOut
+from ..db import storage
 from .tasks import process_transaction
 
 router = APIRouter()
