@@ -4,6 +4,7 @@ import CallChart from './components/CallChart'
 import ChartControls from './components/ChartControls'
 import AreaChart from './components/AreaChart'
 import { supabase } from './supabaseClient'
+import useDebounce from './hooks/useDebounce'
 
 const dummyLabels = ['Agent success', 'Unsupported language', 'Incorrect ID', 'Customer hostility']
 
@@ -18,27 +19,29 @@ export default function App() {
   const [areaLabels, setAreaLabels] = useState(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'])
   const [areaData, setAreaData] = useState<number[]>([120, 160, 140, 180, 170, 150, 190])
 
+  const debouncedEmail = useDebounce(email, 400)
+
   useEffect(() => {
-    // try to fetch saved values for email when set
-    if (!email) return
+    // try to fetch saved values for email when set (debounced)
+    if (!debouncedEmail) return
     ;(async () => {
-  const { data: rows, error, status } = await supabase.from('user_values').select('*').eq('email', email).limit(1)
+  const { data: rows, error, status } = await supabase.from('user_values').select('*').eq('email', debouncedEmail).limit(1)
       // PostgREST returns 404 when the table doesn't exist
       if (status === 404 || (error && /not found/i.test(error.message || ''))) {
         setTableMissing(true)
         // fall back to localStorage
-        const key = `user_values_${email}`
+        const key = `user_values_${debouncedEmail}`
         const raw = localStorage.getItem(key)
         if (raw) {
           try {
             const parsed = JSON.parse(raw)
             if (Array.isArray(parsed)) setData(parsed)
           } catch (e) {
-            // ignore
+            console.error('Failed to parse localStorage data', e)
           }
         }
         return
-      }
+        }
       if (rows && rows.length) {
         const existing = rows[0]
         if (existing.values) {
@@ -52,7 +55,7 @@ export default function App() {
         if (!existing.values && existing.pie) setData(existing.pie)
       }
     })()
-  }, [email])
+  }, [debouncedEmail])
 
   async function saveValues(newValues: number[]) {
     if (!email) {
@@ -104,8 +107,20 @@ export default function App() {
       }
       setData(newValues)
       setMessage({ type: 'success', text: 'Values saved to Supabase.' })
-    } catch (err: any) {
-      setMessage({ type: 'error', text: `Save failed: ${err?.message || err}` })
+    } catch (err) {
+      let errorMessage = 'Unknown error'
+      if (err instanceof Error) {
+        errorMessage = err.message
+      } else if (typeof err === 'string') {
+        errorMessage = err
+      } else {
+        try {
+          errorMessage = JSON.stringify(err)
+        } catch {
+          errorMessage = String(err)
+        }
+      }
+      setMessage({ type: 'error', text: `Save failed: ${errorMessage}` })
     } finally {
       setSaving(false)
       window.setTimeout(() => setMessage(null), 3000)
