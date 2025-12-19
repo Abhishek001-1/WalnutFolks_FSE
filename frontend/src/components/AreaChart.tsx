@@ -125,7 +125,7 @@ export default function AreaChart({ data, labels }: Props) {
   }, [data, labels])
 
   return (
-    <div style={{ position: 'relative', height: 300 }}>
+    <div className="relative h-56 sm:h-72 md:h-80">
       <Line ref={chartRef} data={chartData} options={options} />
       {/* single maxima marker — render only when we have valid pixel positions */}
       {markerPos ? (

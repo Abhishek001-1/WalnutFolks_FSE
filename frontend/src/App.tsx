@@ -128,7 +128,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-8">
       {tableMissing && (
         <div className="max-w-4xl mx-auto mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400">
           <strong className="block">Supabase table `user_values` not found.</strong>
@@ -144,25 +144,25 @@ CREATE POLICY "allow anon" ON public.user_values FOR ALL USING (true) WITH CHECK
         </div>
       )}
       <header className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-semibold">Call Analytics Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold">Call Analytics Dashboard</h1>
         <p className="text-sm text-slate-600 mt-1">Voice agent performance overview</p>
       </header>
 
-      <main className="max-w-5xl mx-auto mt-8 space-y-6">
-        <section className="bg-white p-6 rounded shadow">
+      <main className="max-w-5xl mx-auto mt-6 space-y-6">
+        <section className="bg-white p-4 sm:p-6 rounded shadow">
           <h2 className="text-lg font-semibold mb-4">Call Duration Analysis</h2>
           <AreaChart labels={areaLabels} data={areaData} />
 
           {/* Read-only area chart (no maxima controls) */}
         </section>
 
-        <div className="grid grid-cols-3 gap-6">
-          <section className="col-span-2 bg-white p-6 rounded shadow">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <section className="md:col-span-2 bg-white p-4 sm:p-6 rounded shadow">
             <h2 className="text-lg font-semibold mb-4">Sad Path Analysis</h2>
             <CallChart data={data} labels={dummyLabels} activeIndex={0} onActiveChange={() => setData((d) => d)} />
           </section>
 
-          <aside className="col-span-1 bg-white p-4 rounded shadow space-y-4">
+          <aside className="md:col-span-1 bg-white p-4 rounded shadow space-y-4">
           <div>
             <label className="block text-sm">Email (required to save)</label>
             <input className="w-full border rounded px-2 py-1" value={email} onChange={(e) => setEmail(e.target.value)} />

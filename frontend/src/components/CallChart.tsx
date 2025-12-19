@@ -49,7 +49,7 @@ export default function CallChart({ data, labels, activeIndex = 0, onActiveChang
   // No center text plugin — show only the donut chart
 
   return (
-    <div style={{ position: 'relative', height: 320 }} data-active-index={activeIndex}>
+    <div className="relative h-56 sm:h-72 md:h-80" data-active-index={activeIndex}>
       <Doughnut ref={ref} data={chartData} options={options} />
     </div>
   )
