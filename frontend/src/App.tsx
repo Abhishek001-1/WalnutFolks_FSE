@@ -1,10 +1,9 @@
 import './App.css'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import CallChart from './components/CallChart'
 import ChartControls from './components/ChartControls'
 import AreaChart from './components/AreaChart'
 import { supabase } from './supabaseClient'
-import useDebounce from './hooks/useDebounce'
 
 const dummyLabels = ['Agent success', 'Unsupported language', 'Incorrect ID', 'Customer hostility']
 
@@ -16,46 +15,12 @@ export default function App() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
   // area chart state: labels and data points
-  const [areaLabels, setAreaLabels] = useState(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'])
-  const [areaData, setAreaData] = useState<number[]>([120, 160, 140, 180, 170, 150, 190])
+  const [areaLabels] = useState(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'])
+  const [areaData] = useState<number[]>([120, 160, 140, 180, 170, 150, 190])
 
-  const debouncedEmail = useDebounce(email, 400)
-
-  useEffect(() => {
-    // try to fetch saved values for email when set (debounced)
-    if (!debouncedEmail) return
-    ;(async () => {
-  const { data: rows, error, status } = await supabase.from('user_values').select('*').eq('email', debouncedEmail).limit(1)
-      // PostgREST returns 404 when the table doesn't exist
-      if (status === 404 || (error && /not found/i.test(error.message || ''))) {
-        setTableMissing(true)
-        // fall back to localStorage
-        const key = `user_values_${debouncedEmail}`
-        const raw = localStorage.getItem(key)
-        if (raw) {
-          try {
-            const parsed = JSON.parse(raw)
-            if (Array.isArray(parsed)) setData(parsed)
-          } catch (e) {
-            console.error('Failed to parse localStorage data', e)
-          }
-        }
-        return
-        }
-      if (rows && rows.length) {
-        const existing = rows[0]
-        if (existing.values) {
-          setData(existing.values)
-        }
-        if (existing.area && Array.isArray(existing.area.labels) && Array.isArray(existing.area.data)) {
-          setAreaLabels(existing.area.labels)
-          setAreaData(existing.area.data)
-        }
-        // also handle localStorage fallback shape
-        if (!existing.values && existing.pie) setData(existing.pie)
-      }
-    })()
-  }, [debouncedEmail])
+  // NOTE: removed automatic fetch-on-email input. API calls will happen only
+  // when the user explicitly clicks Save (see `saveValues`). This avoids
+  // making requests while typing.
 
   async function saveValues(newValues: number[]) {
     if (!email) {
